@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WS Delay Test - mStybowski</title>
+</head>
+<style>
+    *{
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    input{
+        padding: 5px 15px;
+        width: 280px;
+        height: 40px;
+    }
+    button{
+        background-color: #98ea29;
+        border: 2px solid green;
+        border-radius: 10px;
+        width: 280px;
+        height: 44px;
+        font-weight: bold;
+        font-size: 15px;
+        color: #484747;
+        margin: 10px 0;
+        cursor: pointer;
+        outline:none;
+    }
+    #wrapper{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    #startSending{
+        background-color: #f18787;
+        border: 2px solid darkred;
+    }
+
+</style>
+
+<body>
+
+<div id="wrapper">
+    <button id="sendOne" onclick="sendMessage()">Send one message</button>
+    <input type="text" id="periodInput" placeholder="period in ms">
+    <button id="startSending" onclick="startSendingMessages()">Start sending messagesT</button>
+</div>
+
+    <script>
+        let timer = null;
+        let messageCounter = 0;
+        var WSSocket = new WebSocket("ws://localhost:8888/echo");
+
+        let diffArray = [];
+
+        WSSocket.onmessage = function (event) {
+            let currentTime = Date.now();
+            let responseObject = JSON.parse(event.data);
+            let sendMilis = responseObject.milis;
+            let diff = currentTime - sendMilis;
+
+            console.log("-----------------")
+            console.log("ID ostatniej wysłanej wiadomości: " + messageCounter)
+            console.log("ID otrzymanej właśnie wiadomości: " + responseObject.messageCounter)
+
+            console.log("Wysłano o: " + sendMilis);
+            console.log("Otrzymano o: " + currentTime);
+            console.log("Roznica: " + diff);
+            diffArray.push(diff);
+            if(messageCounter === 100){
+                console.log("Średnia wartość różnicy: " + (diffArray.reduce((a, b) => a + b, 0))/100)
+            }
+        }
+
+        function generateMessage(){
+            let milis = Date.now();
+
+            return JSON.stringify({
+                milis: milis,
+                messageCounter
+            })
+        }
+
+        function sendMessage() {
+            messageCounter ++;
+            WSSocket.send(generateMessage());
+            if(messageCounter === 100){
+                clearInterval(timer)
+            }
+        }
+
+        function startSendingMessages() {
+            let period = Number(document.getElementById("periodInput").value);
+            timer = setInterval(sendMessage, period);
+        }
+
+    </script>
+</body>
+</html>
