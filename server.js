@@ -8,13 +8,9 @@ let port = 8888;
 function generateCSV(array){
 
     let myArrayOfStrings = array.split(',');
-    console.log(myArrayOfStrings);
-
     let arrayOfValues = myArrayOfStrings.map(function(x) {
         return {value:parseInt(x)}
     });
-
-    console.log(arrayOfValues);
 
     const csvWriter = createCsvWriter({
         path: 'out.csv',
@@ -22,7 +18,6 @@ function generateCSV(array){
             {id: 'value', title: 'Value'}
         ]
     });
-
 
     csvWriter
         .writeRecords(arrayOfValues)
