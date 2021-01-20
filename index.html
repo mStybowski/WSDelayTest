@@ -51,11 +51,12 @@
 </div>
 
     <script>
+
         let timer = null;
         let messageCounter = 0;
         var WSSocket = new WebSocket("ws://localhost:8888/echo");
 
-        let diffArray = [];
+        let delays = [];
 
         WSSocket.onmessage = function (event) {
             let currentTime = Date.now();
@@ -70,9 +71,10 @@
             console.log("Wysłano o: " + sendMilis);
             console.log("Otrzymano o: " + currentTime);
             console.log("Roznica: " + diff);
-            diffArray.push(diff);
-            if(messageCounter === 100){
-                console.log("Średnia wartość różnicy: " + (diffArray.reduce((a, b) => a + b, 0))/100)
+            delays.push(diff);
+            if(delays.length === 100){
+                console.log("Średnia wartość różnicy: " + (delays.reduce((a, b) => a + b, 0))/100)
+                WSSocket.send(delays.join());
             }
         }
 
